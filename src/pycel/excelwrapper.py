@@ -8,7 +8,7 @@ try:
     import pythoncom
     import numpy as np
 except Exception as e:
-    print "WARNING: cant import win32com stuff:",e
+    print("WARNING: cant import win32com stuff:",e)
 
 import os
 from os import path
@@ -100,7 +100,7 @@ class ExcelComWrapper(object):
     def get_formula_from_range(self,range):
         f = self.get_range(range).Formula
         if isinstance(f, (list,tuple)):
-            if any(filter(lambda x: x[0].startswith("="),f)):
+            if any([x for x in f if x[0].startswith("=")]):
                 return [x[0] for x in f];
             else:
                 return None

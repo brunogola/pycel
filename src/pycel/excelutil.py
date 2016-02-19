@@ -1,5 +1,5 @@
-from __future__ import division
-from itertools import izip
+
+
 import collections
 import functools
 import re
@@ -89,7 +89,7 @@ class Cell(object):
         self.__row = int(r)
         self.__col_idx = col2num(c)
             
-        self.value = str(value) if isinstance(value,unicode) else value
+        self.value = str(value) if isinstance(value,str) else value
         self.python_expression = None
         self._compiled_expression = None
         
@@ -147,7 +147,7 @@ class Cell(object):
         if not self.python_expression: return
         
         # if we are a constant string, surround by quotes
-        if isinstance(self.value,(str,unicode)) and not self.formula and not self.python_expression.startswith('"'):
+        if isinstance(self.value,str) and not self.formula and not self.python_expression.startswith('"'):
             self.python_expression='"' + self.python_expression + '"'
         
         try:
@@ -206,7 +206,7 @@ class Cell(object):
             fs = r.Formula
             vs = r.Value
             
-            for it in (list(izip(*x)) for x in izip(ads,fs,vs)):
+            for it in (list(zip(*x)) for x in zip(ads,fs,vs)):
                 row = []
                 for c in it:
                     a = c[0]
@@ -255,7 +255,7 @@ def split_address(address):
     
     # regular <col><row> format    
     if re.match('^[A-Z\$]+[\d\$]+$', address):
-        col,row = filter(None,re.split('([A-Z\$]+)',address))
+        col,row = [_f for _f in re.split('([A-Z\$]+)',address) if _f]
     # R<row>C<col> format
     elif re.match('^R\d+C\d+$', address):
         row,col = address.split('C')
@@ -300,13 +300,13 @@ def resolve_range(rng, flatten=False, sheet=''):
     # single column
     if  start_col == end_col:
         nrows = end_row - start_row + 1
-        data = [ "%s%s%s" % (s,c,r) for (s,c,r) in zip([sheet]*nrows,[start_col]*nrows,range(start_row,end_row+1))]
+        data = [ "%s%s%s" % (s,c,r) for (s,c,r) in zip([sheet]*nrows,[start_col]*nrows,list(range(start_row,end_row+1)))]
         return data,len(data),1
     
     # single row
     elif start_row == end_row:
         ncols = end_col_idx - start_col_idx + 1
-        data = [ "%s%s%s" % (s,num2col(c),r) for (s,c,r) in zip([sheet]*ncols,range(start_col_idx,end_col_idx+1),[start_row]*ncols)]
+        data = [ "%s%s%s" % (s,num2col(c),r) for (s,c,r) in zip([sheet]*ncols,list(range(start_col_idx,end_col_idx+1)),[start_row]*ncols)]
         return data,1,len(data)
     
     # rectangular range
@@ -419,7 +419,7 @@ def get_linest_degree(excel,cl):
 
 def flatten(l):
     for el in l:
-        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+        if isinstance(el, collections.Iterable) and not isinstance(el, str):
             for sub in flatten(el):
                 yield sub
         else:
